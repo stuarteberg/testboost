@@ -1,0 +1,4 @@
+This repo contains a tiny example boost-python module,
+and a script, `compare.sh`, to build it with the OLD conda forge stack (cf201901) vs. the new stack.
+On my machine, the old stack works, but the new stack results in a segfault.
+
