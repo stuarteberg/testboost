@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.12)
 project (TESTBOOST)
 
 #
@@ -8,32 +8,20 @@ if (NOT CMAKE_PREFIX_PATH})
     set(CMAKE_PREFIX_PATH $ENV{CONDA_PREFIX})
 endif()
 
-
 ######################################################################
 #
 #  Find Python library and headers
 #
 ######################################################################
-find_package(PythonInterp)
+set(Python3_USE_STATIC_LIBS TRUE)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-                "from distutils.sysconfig import *; print(get_config_var('LDLIBRARY'))"
-                OUTPUT_VARIABLE PYTHON_LIBRARY_NAME OUTPUT_STRIP_TRAILING_WHITESPACE)
-find_library(PYTHON_LIBRARIES ${PYTHON_LIBRARY_NAME})
+message("Using ${Python_EXECUTABLE}")
+message("Using ${Python_LIBRARIES}")
 
+message("Python version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-                "from distutils.sysconfig import *; print(get_python_inc())"
-                OUTPUT_VARIABLE PYTHON_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-SET(PYTHON_INCLUDE_PATH ${PYTHON_INCLUDE}
-    CACHE PATH "Path to Python include files"
-    FORCE)
-
-message("Using ${PYTHON_EXECUTABLE}")
-message("Using ${PYTHON_LIBRARIES}")
-
-include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(${Python_INCLUDE_DIRS})
 
 ######################################################################
 #
@@ -45,22 +33,23 @@ include_directories(${PYTHON_INCLUDE_PATH})
 # boost_python for the wrong Python version
 #
 ######################################################################
-find_package(Boost 1.64 REQUIRED)
+set(BOOST_ROOT $ENV{CONDA_PREFIX} CACHE STRING "")
+find_package(Boost 1.68 REQUIRED)
 IF(Boost_FOUND)
     IF(Boost_USE_MULTITHREADED)
         # define names for thread-safe library variants
         SET(BOOST_PYTHON_NAMES
-                boost_python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt
-                boost_python-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}-mt
-                boost_python${PYTHON_VERSION_MAJOR}-mt
-                boost_python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt
+                boost_python-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt
+                boost_python-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}-mt
+                boost_python${Python_VERSION_MAJOR}-mt
+                boost_python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt
                 boost_python-mt)
     ENDIF()
 
     IF(Boost_LIB_SUFFIX)
         SET(BOOST_PYTHON_NAMES ${BOOST_PYTHON_NAMES}
             # Windows with mangled library names
-            boost_python${PYTHON_VERSION_MAJOR}${Boost_LIB_SUFFIX}
+            boost_python${Python_VERSION_MAJOR}${Boost_LIB_SUFFIX}
             boost_python${Boost_LIB_SUFFIX})
     ENDIF()
 
@@ -68,13 +57,13 @@ IF(Boost_FOUND)
     # (may or may not be thread-safe)
     SET(BOOST_PYTHON_NAMES ${BOOST_PYTHON_NAMES}
                 # Linux with multiple Python versions
-                boost_python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}
+                boost_python-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}
                 # Gentoo
-                boost_python-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}
+                boost_python-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}
                 # Mac with Python 3
-                boost_python${PYTHON_VERSION_MAJOR}
+                boost_python${Python_VERSION_MAJOR}
                 # conda-forge
-                boost_python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}
+                boost_python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}
                 # default
                 boost_python)
 
