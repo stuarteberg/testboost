@@ -83,7 +83,19 @@ endif()
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_library( testboost SHARED src/testboost.cpp )
-target_link_libraries( testboost ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES} )
+
+#
+# DO NOT LINK AGAINST libpython
+# Instead, assume that bin/python has been statically linked and
+# thus all needed symbols will be available during execution.
+# Use -undefined dynamic_lookup to avoid linker errors at build time (and defer them to runtime).
+# https://github.com/conda-forge/boost-feedstock/issues/70#issuecomment-486398688
+# 
+if (APPLE)
+    set_property(TARGET testboost APPEND_STRING PROPERTY LINK_FLAGS "-undefined dynamic_lookup")
+endif()
+
+target_link_libraries( testboost ${Boost_PYTHON_LIBRARY})
 set_target_properties(testboost PROPERTIES PREFIX  ""
                                            SUFFIX ".so"
                                            DEBUG_POSTFIX "" )
