@@ -1,10 +1,12 @@
 #!/bin/bash
 
+
 ##
 ## Try building and testing this repo using packages
 ## from the old conda-forge label (cf201901)
 ## and the new one (main)
 ##
+source $(conda info --base)/etc/profile.d/conda.sh
 
 PACKAGES="clangxx_osx-64 cmake boost=1.68 python=3.6"
 
